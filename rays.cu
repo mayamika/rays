@@ -315,6 +315,13 @@ __host__ __device__ T max(const T &a, const T &b) {
     return b;
 }
 
+template <typename T>
+__host__ __device__ T pow(const T &a, int p) {
+    T w = 1;
+    for (int i = 0; i < p; ++i) w *= a;
+    return w;
+}
+
 __host__ __device__ double dot_product(const Vector3d &a, const Vector3d &b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
@@ -559,10 +566,9 @@ __host__ __device__ Vector3d phong_model(const Vector3d &pos,
 
             Vector3d R = normalize(reflect(inverse(L), normal));
             Vector3d S = inverse(dir);
-            specular =
-                add(specular,
-                    mult(lights[i].color,
-                         ks * k * std::pow(max(dot_product(R, S), 0.0), 32)));
+            specular = add(specular,
+                           mult(lights[i].color,
+                                ks * k * pow(max(dot_product(R, S), 0.0), 32)));
         }
     }
     return add(add(mult(ambient, trig.color), mult(diffuse, trig.color)),

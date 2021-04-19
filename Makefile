@@ -1,10 +1,12 @@
 CC := nvcc
-CFLAGS := -ccbin=mpic++ -Werror cross-execution-space-call -lm -lmpi -D_MWAITXINTRIN_H_INCLUDED -Xcompiler -fopenmp
+CFLAGS := -ccbin=mpic++ -Werror cross-execution-space-call -lm -lmpi -D_MWAITXINTRIN_H_INCLUDED
 
 CPPSTD ?= c++11
 ifneq ($(CPPSTD),)
 CFLAGS += --std=$(CPPSTD)
 endif
+
+CFLAGS += -Xcompiler -fopenmp
 
 ifeq ($(DEBUG),true)
 CFLAGS += -DDEBUG
