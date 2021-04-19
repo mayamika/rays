@@ -48,6 +48,7 @@
 void handle_signals() {
     auto nop_handler = [](int sig) {
         std::cerr << "Unexpected signal received: " << sig << std::endl;
+        MPI_Finalize();
         exit(0);
     };
     std::signal(SIGSEGV, nop_handler);
@@ -65,20 +66,43 @@ struct Flags {
 static Flags flags;
 
 void parse_flags(int argc, char *argv[]) {
-    auto usage = [argv](const std::string &desc) {
-        std::cerr << "Wrong usage: " << desc << std::endl;
-        std::cerr << "Usage of " << argv[0] << ":\n"
-                  << "\t--gpu\t\t"
-                  << "Run app using CUDA\n"
-                  << "\t--cpu\t\t"
-                  << "Run app using OpenMP\n"
-                  << "\t--default\t"
-                  << "Print optimal parameters and exit" << std::endl;
+    int rank;
+    CHECK_MPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
+    auto usage = [rank, argv](const std::string &desc) {
+        if (rank == 0) {
+            std::cerr << "Wrong usage: " << desc << std::endl;
+            std::cerr << "Usage of " << argv[0] << ":\n"
+                      << "\t--gpu\t\t"
+                      << "Run app using CUDA\n"
+                      << "\t--cpu\t\t"
+                      << "Run app using OpenMP\n"
+                      << "\t--default\t"
+                      << "Print optimal parameters and exit" << std::endl;
+        }
     };
-    auto params = []() { std::cerr << "TODO"; };
+    auto params = [rank]() {
+        if (rank == 0) {
+            std::cerr
+                << "1024\n"
+                   "%d.data\n"
+                   "320 240 120\n"
+                   "7.0 3.0 0.0 2.0 1.0 2.0 6.0 1.0 0.0 0.0\n"
+                   "2.0 0.0 0.0 0.5 0.1 1.0 4.0 1.0 0.0 0.0\n"
+                   "2.0 0.0 0.0 1.0 0.0 0.0 1.0 0.9 0.1 10\n"
+                   "0.0 2.0 0.0 0.0 1.0 0.0 0.75 0.8 0.2 5\n"
+                   "0.0 0.0 0.0 0.0 0.7 0.7 0.5 0.7 0.3 2\n"
+                   "-5.0 -5.0 -1.0 -5.0 5.0 -1.0 5.0 5.0 -1.0 5.0 -5.0 -1.0 "
+                   "floor.data 0.0 1.0 0.0 0.5\n"
+                   "2\n"
+                   "-10.0 0.0 10.0 1.0 1.0 1.0\n"
+                   "1.0 0.0 10.0 0.0 0.0 1.0\n"
+                   "10 16\n";
+        }
+    };
     if (argc < 2) return;
     if (argc > 2) {
         usage("only one application mode can be passed");
+        MPI_Finalize();
         exit(0);
     }
     if (argc == 2) {
@@ -88,9 +112,11 @@ void parse_flags(int argc, char *argv[]) {
             flags.parallelization_policy = ParallelizationPolicy::OpenMP;
         } else if (strcmp(argv[1], "--default") == 0) {
             params();
+            MPI_Finalize();
             exit(0);
         } else {
             usage("unknown option passed");
+            MPI_Finalize();
             exit(0);
         }
     }
@@ -703,8 +729,8 @@ void mpi_bcast_scene_trigs(std::vector<Trig> &trigs, MPI_Comm comm) {
 
 int main(int argc, char *argv[]) {
     handle_signals();
-    parse_flags(argc, argv);
     MPIContext ctx(&argc, &argv);
+    parse_flags(argc, argv);
 
     int rank, nprocesses;
     CHECK_MPI(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
