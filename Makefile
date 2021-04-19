@@ -1,7 +1,6 @@
 CC := nvcc
-CFLAGS := -ccbin=mpic++ -Werror cross-execution-space-call -lm -lmpi -D_MWAITXINTRIN_H_INCLUDED
+CFLAGS := -ccbin=mpic++ -Werror cross-execution-space-call -lm -lmpi -D_MWAITXINTRIN_H_INCLUDED -Xcompiler -fopenmp
 
-CPPSTD ?= c++11
 ifneq ($(CPPSTD),)
 CFLAGS += --std=$(CPPSTD)
 endif
