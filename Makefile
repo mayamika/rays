@@ -14,7 +14,7 @@ TARGET := rays
 
 SOURCES_DIR := ./
 
-all: $(TARGET).asc
+all: $(TARGET)
 
 $(TARGET): $(SOURCES_DIR)/$(TARGET).cu
 	$(CC) $(CFLAGS) -o "$@" $<
@@ -27,4 +27,4 @@ SIGNER_EMAIL := andranik.chakiryan@gmail.com
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) $(TARGET).asc
+	$(RM) $(TARGET)
