@@ -687,7 +687,7 @@ __global__ void ssaa_cuda(uchar4 *dst, uchar4 *src, int new_w, int new_h, int w,
 void ssaa_omp(uchar4 *dst, uchar4 *src, int new_w, int new_h, int w, int h) {
     int kernel_w = w / new_w, kernel_h = h / new_h;
 #pragma omp parallel for
-    for (int pix = 0; pix < new_h * new_h; ++pix) {
+    for (int pix = 0; pix < new_w * new_h; ++pix) {
         int i = pix / new_w;
         int j = pix % new_w;
 
